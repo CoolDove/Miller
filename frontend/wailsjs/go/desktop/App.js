@@ -478,6 +478,10 @@ export function OpenLogFolder() {
   return window['go']['desktop']['App']['OpenLogFolder']();
 }
 
+export function OpenMessageInBrowser(arg1) {
+  return window['go']['desktop']['App']['OpenMessageInBrowser'](arg1);
+}
+
 export function OpenThemesFolder() {
   return window['go']['desktop']['App']['OpenThemesFolder']();
 }

@@ -1491,6 +1491,7 @@ const ar: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'غير مزخرف',
   'settingsPanel.bodyFont.mono': 'أحادي المسافة',
   'detail.toolbar.viewSource': 'عرض المصدر',
+  'detail.toolbar.openBrowser': 'فتح في المتصفح',
   'detail.source.title': 'مصدر الرسالة',
   'detail.source.loading': 'جارٍ جلب المصدر من الخادم',
   'detail.source.copy': 'نسخ المصدر',

@@ -240,6 +240,8 @@ export function OpenLocalesFolder():Promise<void>;
 
 export function OpenLogFolder():Promise<void>;
 
+export function OpenMessageInBrowser(arg1:number):Promise<void>;
+
 export function OpenThemesFolder():Promise<void>;
 
 export function PreviewArchiveExportName(arg1:string,arg2:string):Promise<string>;

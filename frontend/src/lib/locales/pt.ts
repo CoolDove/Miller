@@ -1485,6 +1485,7 @@ const pt: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-serif',
   'settingsPanel.bodyFont.mono': 'Monoespaçada',
   'detail.toolbar.viewSource': 'Ver fonte',
+  'detail.toolbar.openBrowser': 'Abrir no navegador',
   'detail.source.title': 'Fonte da mensagem',
   'detail.source.loading': 'A obter fonte do servidor',
   'detail.source.copy': 'Copiar fonte',

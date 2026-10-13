@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	stdhtml "html"
 	"io"
 	"os"
 	"path/filepath"
@@ -167,6 +168,42 @@ func (a *App) GetMessageHTML(id int64, allowRemote, includeTrackers bool) (strin
 		return a.renderHTMLWithTrackers(m.BodyHTML, atts), nil
 	}
 	return a.renderHTML(m.BodyHTML, atts, allowRemote), nil
+}
+
+// OpenMessageInBrowser writes the cached message body to a temporary HTML file
+// and opens it with the platform's default handler for HTML documents. Opening
+// externally is an explicit request to load remote mail content, while the
+// existing tracking-pixel preference still applies.
+func (a *App) OpenMessageInBrowser(id int64) error {
+	if err := a.ready(); err != nil {
+		return err
+	}
+	m, err := a.store.GetMessage(a.ctx, id)
+	if err != nil {
+		return err
+	}
+	atts, err := a.store.ListAttachments(a.ctx, id)
+	if err != nil {
+		return err
+	}
+	body := a.renderHTML(m.BodyHTML, atts, true)
+	if body == "" {
+		body = "<pre>" + stdhtml.EscapeString(m.BodyPlain) + "</pre>"
+	}
+	file, err := os.CreateTemp("", "pelton-message-*.html")
+	if err != nil {
+		return fmt.Errorf("create browser message: %w", err)
+	}
+	path := file.Name()
+	defer file.Close()
+	document := "<!doctype html><html><head><meta charset=\"utf-8\"><title>" + stdhtml.EscapeString(m.Subject) + "</title></head><body>" + body + "</body></html>"
+	if _, err := file.WriteString(document); err != nil {
+		return fmt.Errorf("write browser message: %w", err)
+	}
+	if err := openPath(path); err != nil {
+		return err
+	}
+	return nil
 }
 
 // renderHTML resolves inline cid images to data urls then sanitizes with the

@@ -1499,6 +1499,7 @@ const it: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-serif',
   'settingsPanel.bodyFont.mono': 'Monospaziato',
   'detail.toolbar.viewSource': 'Visualizza origine',
+  'detail.toolbar.openBrowser': 'Apri nel browser',
   'detail.source.title': 'Origine del messaggio',
   'detail.source.loading': 'Recupero dell\'origine dal server in corso',
   'detail.source.copy': 'Copia origine',

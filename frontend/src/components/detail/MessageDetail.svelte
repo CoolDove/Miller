@@ -17,7 +17,7 @@
   import { visibleMessageId, hasTabs, activeTabId, tabs, markTabStale, labelTab, closeTab } from '../../stores/tabs'
   import { openMessageId } from '../../stores/selection'
   import { messageDetail, loadMessage, clearMessage } from '../../stores/message'
-  import { setFlagged, deleteMessage, archiveMessage, scanMessage } from '../../lib/api'
+import { setFlagged, deleteMessage, archiveMessage, scanMessage, openMessageInBrowser } from '../../lib/api'
   import { reportArchiveExport, dropDeleted } from '../../lib/messageactions'
   import {
     virusTotal,
@@ -289,7 +289,8 @@ ${bodyHtml}
         on:toggleFlag={() => toggleFlag(detail)}
         on:print={() => printMessage(detail)}
         on:info={() => (infoOpen = true)}
-        on:source={() => (sourceOpen = true)}
+         on:source={() => (sourceOpen = true)}
+         on:openBrowser={() => void openMessageInBrowser(detail.id).catch((err) => toastError(errorMessage(err)))}
       />
     </div>
 

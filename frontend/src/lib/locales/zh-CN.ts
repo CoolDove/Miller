@@ -1492,6 +1492,7 @@ const zhCN: Record<string, string> = {
   'settingsPanel.bodyFont.sans': '无衬线体',
   'settingsPanel.bodyFont.mono': '等宽体',
   'detail.toolbar.viewSource': '查看源码',
+  'detail.toolbar.openBrowser': '用浏览器打开',
   'detail.source.title': '邮件源码',
   'detail.source.loading': '正在从服务器获取源码',
   'detail.source.copy': '复制源码',

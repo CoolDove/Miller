@@ -1491,6 +1491,7 @@ const en: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-serif',
   'settingsPanel.bodyFont.mono': 'Monospace',
   'detail.toolbar.viewSource': 'View source',
+  'detail.toolbar.openBrowser': 'Open in browser',
   'detail.source.title': 'Message source',
   'detail.source.loading': 'Fetching source from the server',
   'detail.source.copy': 'Copy source',

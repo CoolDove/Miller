@@ -1491,6 +1491,7 @@ const es: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-serif',
   'settingsPanel.bodyFont.mono': 'Monospace',
   'detail.toolbar.viewSource': 'Ver código fuente',
+  'detail.toolbar.openBrowser': 'Abrir en el navegador',
   'detail.source.title': 'Código fuente del mensaje',
   'detail.source.loading': 'Obteniendo el código fuente del servidor',
   'detail.source.copy': 'Copiar código fuente',

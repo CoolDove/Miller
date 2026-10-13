@@ -15,6 +15,7 @@
     IconInfoCircle,
     IconCode,
     IconShieldSearch,
+    IconExternalLink,
   } from '@tabler/icons-svelte'
   import IconButton from '../common/IconButton.svelte'
   import { t } from '../../lib/i18n'
@@ -38,6 +39,7 @@
     info: void
     source: void
     scan: void
+    openBrowser: void
   }>()
 
   $: flagLabel = flagged ? $t('detail.toolbar.unflag') : $t('detail.toolbar.flag')
@@ -109,6 +111,9 @@
     on:click={() => dispatch('source')}
   >
     <IconCode size={18} stroke={1.6} />
+  </IconButton>
+  <IconButton label={$t('detail.toolbar.openBrowser')} on:click={() => dispatch('openBrowser')}>
+    <IconExternalLink size={18} stroke={1.6} />
   </IconButton>
 </div>
 

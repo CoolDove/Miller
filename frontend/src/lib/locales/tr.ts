@@ -1491,6 +1491,7 @@ const tr: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-serif',
   'settingsPanel.bodyFont.mono': 'Eş aralıklı',
   'detail.toolbar.viewSource': 'Kaynağı görüntüle',
+  'detail.toolbar.openBrowser': 'Tarayıcıda aç',
   'detail.source.title': 'İleti kaynağı',
   'detail.source.loading': 'Kaynak sunucudan alınıyor',
   'detail.source.copy': 'Kaynağı kopyala',

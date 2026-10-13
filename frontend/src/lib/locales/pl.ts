@@ -1444,6 +1444,7 @@ const pl: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Bezszeryfowa',
   'settingsPanel.bodyFont.mono': 'O stałej szerokości',
   'detail.toolbar.viewSource': 'Pokaż źródło',
+  'detail.toolbar.openBrowser': 'Otwórz w przeglądarce',
   'detail.source.title': 'Źródło wiadomości',
   'detail.source.loading': 'Pobieranie źródła z serwera',
   'detail.source.copy': 'Kopiuj źródło',

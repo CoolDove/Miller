@@ -1491,6 +1491,7 @@ const de: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-Serif',
   'settingsPanel.bodyFont.mono': 'Monospace',
   'detail.toolbar.viewSource': 'Quelltext anzeigen',
+  'detail.toolbar.openBrowser': 'Im Browser öffnen',
   'detail.source.title': 'Nachrichten-Quelltext',
   'detail.source.loading': 'Quelltext wird vom Server geladen',
   'detail.source.copy': 'Quelltext kopieren',

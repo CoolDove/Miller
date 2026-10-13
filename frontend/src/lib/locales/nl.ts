@@ -1491,6 +1491,7 @@ const nl: Record<string, string> = {
   'settingsPanel.bodyFont.sans': 'Sans-serif',
   'settingsPanel.bodyFont.mono': 'Monospace',
   'detail.toolbar.viewSource': 'Bron weergeven',
+  'detail.toolbar.openBrowser': 'Openen in browser',
   'detail.source.title': 'Berichtbron',
   'detail.source.loading': 'Bron wordt van de server opgehaald',
   'detail.source.copy': 'Bron kopiëren',

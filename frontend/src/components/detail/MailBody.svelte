@@ -115,7 +115,7 @@
     // is the second of the two locks rather than the only one.
     const mediaSrc = allowRemote ? 'data: https: http:' : 'data:'
     const csp = `default-src 'none'; img-src ${imgSrc}; media-src ${mediaSrc}; style-src 'unsafe-inline'; font-src data:; script-src 'nonce-${nonce}'`
-    const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`
+    const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}"><meta name="referrer" content="no-referrer">`
     const open = '<sty' + 'le>'
     const close = '</sty' + 'le>'
     // External links are relayed to the parent instead of navigating this
@@ -132,7 +132,7 @@
       '<scr' +
       'ipt nonce="' +
       nonce +
-      '">document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;if(/^#/i.test(href)){e.preventDefault();window.parent.postMessage({peltonScrollFragment:href.slice(1)},"*");return;}e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
+      '">document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;if(/^#/i.test(href)){e.preventDefault();var f=href.slice(1),d;try{f=decodeURIComponent(f)}catch(_){}d=document.getElementById(f)||Array.prototype.slice.call(document.getElementsByTagName("a")).find(function(x){return x.getAttribute("name")===f});if(d){var r=d.getBoundingClientRect(),root=document.documentElement.getBoundingClientRect();window.parent.postMessage({peltonScrollFragment:f,peltonTargetTop:r.top-root.top},"*")}return;}e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
       contextHandler +
       '</scr' +
       'ipt>'
@@ -270,10 +270,10 @@
     if (event.source !== frame?.contentWindow) {
       return
     }
-    const data = event.data as { peltonOpenUrl?: unknown; peltonScrollFragment?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
+    const data = event.data as { peltonOpenUrl?: unknown; peltonScrollFragment?: unknown; peltonTargetTop?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
     const fragment = data?.peltonScrollFragment
-    if (typeof fragment === 'string') {
-      scrollToFragment(fragment)
+    if (typeof fragment === 'string' && typeof data?.peltonTargetTop === 'number') {
+      scrollToFragment(data.peltonTargetTop)
       return
     }
     const href = data?.peltonOpenUrl
@@ -289,26 +289,24 @@
 
   // Scroll the outer reading pane because the iframe is sized to its full
   // content and therefore has no useful internal scrollbar of its own.
-  function scrollToFragment(rawFragment: string): void {
-    const doc = frame?.contentDocument
+  function scrollToFragment(targetTop: number): void {
     const scroll = frame?.closest('.scroll') as HTMLElement | null
-    if (!doc || !frame || !scroll) {
+    if (!frame || !scroll || !Number.isFinite(targetTop)) {
       return
     }
-    let fragment: string
-    try {
-      fragment = decodeURIComponent(rawFragment)
-    } catch {
-      fragment = rawFragment
-    }
-    const target = doc.getElementById(fragment) ??
-      Array.from(doc.getElementsByTagName('a')).find((anchor) => anchor.getAttribute('name') === fragment)
-    if (!target) {
-      return
-    }
-    const targetRect = target.getBoundingClientRect()
     const scrollRect = scroll.getBoundingClientRect()
-    const top = scroll.scrollTop + targetRect.top - scrollRect.top
+    const frameRect = frame.getBoundingClientRect()
+    // The target is measured in iframe CSS pixels while the iframe itself is
+    // laid out in the parent document's pixels. Derive the cross-document
+    // scale from the iframe's rendered and inner widths instead of guessing
+    // from its height (which can include content and rounding differences).
+    // clientWidth is the layout viewport and ignores the iframe document's
+    // rendered zoom. The root rect is in the same rendered coordinate system
+    // as the target rect sent by the iframe.
+    const innerWidth = frame.contentDocument?.documentElement.getBoundingClientRect().width ?? 0
+    const scale = innerWidth > 0 ? frameRect.width / innerWidth : 1
+    const frameTop = scroll.scrollTop + frameRect.top - scrollRect.top
+    const top = frameTop + targetTop * scale
     scroll.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
   }
 

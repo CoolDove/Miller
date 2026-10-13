@@ -466,6 +466,11 @@ export function getMessageSource(id: number): Promise<string> {
   return App.GetMessageSource(id)
 }
 
+/** Opens the current message as a temporary HTML document in the system handler. */
+export function openMessageInBrowser(id: number): Promise<void> {
+  return App.OpenMessageInBrowser(id)
+}
+
 // getMessageHtml re-renders a body with the chosen remote-image policy.
 // includeTrackers additionally loads the images detection flagged as tracking
 // pixels, which the setting otherwise keeps blocked even here.
