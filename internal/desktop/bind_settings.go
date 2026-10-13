@@ -53,6 +53,9 @@ const (
 	// fetch anything (the reading pane's csp limits font-src to data:). Off puts
 	// every message in the reader font.
 	settingSenderFonts = "sender_fonts"
+	// settingRelativeURLs allows mail to resolve ordinary relative links and
+	// resources. Fragment-only links are always allowed by the mail renderer.
+	settingRelativeURLs = "relative_urls"
 	// settingHarvestAddresses keeps learning addresses from mail for compose
 	// autocomplete. On by default, since it is what autocomplete was before
 	// there were contacts. Off leaves only the synced address books, which is
@@ -378,6 +381,9 @@ type UIPrefsDTO struct {
 	// SenderFonts lets a message use the font families it asks for. Off renders
 	// every message in BodyFont instead.
 	SenderFonts bool `json:"senderFonts"`
+	// RelativeURLs allows ordinary relative links and resources in mail HTML.
+	// Fragment-only links remain available when this is off.
+	RelativeURLs bool `json:"relativeUrls"`
 	// NotifyNewMail raises a native OS notification when new mail lands in an
 	// inbox. Off by default. VIP-sender notifications fire regardless of this
 	// (see bind_vip.go), so important senders cut through when it is off.
@@ -491,6 +497,7 @@ func (a *App) GetUIPrefs() (UIPrefsDTO, error) {
 		UIFont:                     a.stringSetting(settingUIFont, "default"),
 		MonoFont:                   a.stringSetting(settingMonoFont, "default"),
 		SenderFonts:                a.senderFonts(),
+		RelativeURLs:               a.boolSetting(settingRelativeURLs, false),
 		NotifyNewMail:              a.boolSetting(settingNotifyNewMail, false),
 		VerboseSync:                a.boolSetting(settingVerboseSync, false),
 		SyncProgressBar:            a.boolSetting(settingSyncProgress, true),

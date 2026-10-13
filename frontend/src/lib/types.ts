@@ -557,6 +557,9 @@ export interface UIPrefs {
   // senderFonts lets a message use the font families it asks for. On by
   // default; off renders every message in bodyFont.
   senderFonts: boolean
+  // relativeUrls allows ordinary relative links and resources in mail HTML.
+  // Fragment-only links remain available when this is off.
+  relativeUrls: boolean
   // notifyNewMail raises a native OS notification for new inbox mail. VIP
   // senders notify regardless of this (see stores/vip.ts).
   notifyNewMail: boolean

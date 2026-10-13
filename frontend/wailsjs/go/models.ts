@@ -2283,6 +2283,7 @@ export namespace desktop {
 	    uiFont: string;
 	    monoFont: string;
 	    senderFonts: boolean;
+	    relativeUrls: boolean;
 	    notifyNewMail: boolean;
 	    verboseSync: boolean;
 	    syncProgressBar: boolean;
@@ -2372,6 +2373,7 @@ export namespace desktop {
 	        this.uiFont = source["uiFont"];
 	        this.monoFont = source["monoFont"];
 	        this.senderFonts = source["senderFonts"];
+	        this.relativeUrls = source["relativeUrls"];
 	        this.notifyNewMail = source["notifyNewMail"];
 	        this.verboseSync = source["verboseSync"];
 	        this.syncProgressBar = source["syncProgressBar"];

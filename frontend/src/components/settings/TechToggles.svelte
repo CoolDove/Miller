@@ -8,13 +8,14 @@
   import ToggleSwitch from '../common/ToggleSwitch.svelte'
   import { t } from '../../lib/i18n'
 
-  type ToggleKey = 'showMailboxBadge' | 'showDateTime' | 'showPgp' | 'showAuth'
+  type ToggleKey = 'showMailboxBadge' | 'showDateTime' | 'showPgp' | 'showAuth' | 'relativeUrls'
 
   $: items = [
     { key: 'showMailboxBadge' as ToggleKey, label: $t('settingsPanel.mailboxBadge'), note: $t('settingsPanel.mailboxBadgeNote') },
     { key: 'showDateTime' as ToggleKey, label: $t('settingsPanel.dateTime'), note: $t('settingsPanel.dateTimeNote') },
     { key: 'showPgp' as ToggleKey, label: $t('settingsPanel.pgpStatus'), note: $t('settingsPanel.pgpStatusNote') },
     { key: 'showAuth' as ToggleKey, label: $t('settingsPanel.authStatus'), note: $t('settingsPanel.authStatusNote') },
+    { key: 'relativeUrls' as ToggleKey, label: $t('settingsPanel.toggle.relativeURLs'), note: $t('settingsPanel.hint.relativeURLs') },
   ]
 </script>
 

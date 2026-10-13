@@ -118,10 +118,9 @@
     const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${csp}">`
     const open = '<sty' + 'le>'
     const close = '</sty' + 'le>'
-    // relays clicked links to the parent instead of trying to navigate this
-    // sandboxed iframe (which has no allow-top-navigation and would silently
-    // do nothing). runs inside the iframe's own document so it's a normal,
-    // same-document click listener - no cross-frame event delivery involved.
+    // External links are relayed to the parent instead of navigating this
+    // sandboxed iframe. Fragment links are relayed too because the iframe is
+    // sized to the mail's full height and the scrollbar belongs to the parent.
     //
     // the contextmenu half is only wired up when a scan can actually be
     // offered: with the integration off there is nothing to put in a menu, and
@@ -133,7 +132,7 @@
       '<scr' +
       'ipt nonce="' +
       nonce +
-      '">document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
+      '">document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;if(/^#/i.test(href)){e.preventDefault();window.parent.postMessage({peltonScrollFragment:href.slice(1)},"*");return;}e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
       contextHandler +
       '</scr' +
       'ipt>'
@@ -265,16 +264,18 @@
     scheduleAttach()
   }
 
-  // onWindowMessage receives the url from the click handler running inside
-  // the iframe's own document (see the injected script in buildSrcdoc) and
-  // opens it in the external browser. The source check makes sure this only
-  // ever acts on messages from our own mail iframe, not anything else that
-  // might postMessage into this window.
+  // onWindowMessage receives link actions from the iframe's click handler. The
+  // source check makes sure this only acts on messages from our own mail iframe.
   function onWindowMessage(event: MessageEvent): void {
     if (event.source !== frame?.contentWindow) {
       return
     }
-    const data = event.data as { peltonOpenUrl?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
+    const data = event.data as { peltonOpenUrl?: unknown; peltonScrollFragment?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
+    const fragment = data?.peltonScrollFragment
+    if (typeof fragment === 'string') {
+      scrollToFragment(fragment)
+      return
+    }
     const href = data?.peltonOpenUrl
     if (typeof href === 'string' && /^(https?:|mailto:)/i.test(href)) {
       BrowserOpenURL(href)
@@ -284,6 +285,31 @@
     if (typeof link === 'string' && typeof data?.x === 'number' && typeof data?.y === 'number') {
       openLinkMenu(link, data.x, data.y)
     }
+  }
+
+  // Scroll the outer reading pane because the iframe is sized to its full
+  // content and therefore has no useful internal scrollbar of its own.
+  function scrollToFragment(rawFragment: string): void {
+    const doc = frame?.contentDocument
+    const scroll = frame?.closest('.scroll') as HTMLElement | null
+    if (!doc || !frame || !scroll) {
+      return
+    }
+    let fragment: string
+    try {
+      fragment = decodeURIComponent(rawFragment)
+    } catch {
+      fragment = rawFragment
+    }
+    const target = doc.getElementById(fragment) ??
+      Array.from(doc.getElementsByTagName('a')).find((anchor) => anchor.getAttribute('name') === fragment)
+    if (!target) {
+      return
+    }
+    const targetRect = target.getBoundingClientRect()
+    const scrollRect = scroll.getBoundingClientRect()
+    const top = scroll.scrollTop + targetRect.top - scrollRect.top
+    scroll.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
   }
 
   // openLinkMenu shows the scan action for a link the user right-clicked inside

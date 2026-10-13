@@ -84,6 +84,7 @@ const defaults: UIPrefs = {
   themeDarkEnd: '07:00',
   bodyFont: 'default',
   senderFonts: true,
+  relativeUrls: false,
   uiFont: 'default',
   monoFont: 'default',
   notifyNewMail: false,
@@ -439,6 +440,13 @@ export function setSenderFonts(value: boolean): void {
   void setSetting(SettingKeys.senderFonts, String(value))
 }
 
+// setRelativeURLs toggles ordinary relative links and resources in mail HTML.
+// Fragment-only links remain enabled regardless of this preference.
+export function setRelativeURLs(value: boolean): void {
+  prefs.update((p) => ({ ...p, relativeUrls: value }))
+  void setSetting(SettingKeys.relativeURLs, String(value))
+}
+
 // setThemeDarkTimes updates the schedule mode's dark window and reapplies the
 // theme immediately when that mode is active.
 export function setThemeDarkTimes(start: string, end: string): void {
@@ -553,14 +561,15 @@ export function setSyncAutoBackfill(value: boolean): void {
 }
 
 // toggle keys map a boolean preference to its setting key so setToggle stays
-// generic over the four technical-info switches.
-type ToggleKey = 'showMailboxBadge' | 'showDateTime' | 'showPgp' | 'showAuth'
+// generic over the technical-info switches.
+type ToggleKey = 'showMailboxBadge' | 'showDateTime' | 'showPgp' | 'showAuth' | 'relativeUrls'
 
 const toggleSettingKey: Record<ToggleKey, string> = {
   showMailboxBadge: SettingKeys.showMailboxBadge,
   showDateTime: SettingKeys.showDateTime,
   showPgp: SettingKeys.showPgp,
   showAuth: SettingKeys.showAuth,
+  relativeUrls: SettingKeys.relativeURLs,
 }
 
 export function setToggle(key: ToggleKey, value: boolean): void {

@@ -1424,6 +1424,8 @@ const pl: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Używana do e-maili bez własnych czcionek oraz do wszystkich e-maili, gdy ustawienie poniżej jest wyłączone.',
   'settingsPanel.toggle.senderFonts': 'Pozwalaj e-mailom używać własnych czcionek',
   'settingsPanel.hint.senderFonts': 'Zaprojektowana poczta wygląda tak, jak ją napisano. Nic nie jest pobierane: czcionka albo już jest na tym komputerze, albo używana jest ta powyżej. Wyłączone wyświetla każdy e-mail Twoją czcionką czytania.',
+  'settingsPanel.toggle.relativeURLs': 'Zezwalaj na względne adresy URL w poczcie',
+  'settingsPanel.hint.relativeURLs': 'Pozwala rozwiązywać linki i zasoby, takie jak image.jpg lub page.html, względem wiadomości. Linki dokumentu, takie jak #section, pozostają dostępne po wyłączeniu.',
   'settingsPanel.bodyFont.groupCurated': 'Standardowe',
   'settingsPanel.bodyFont.groupSystem': 'Zainstalowane na tym komputerze',
   'settingsPanel.label.uiFont': 'Czcionka interfejsu',

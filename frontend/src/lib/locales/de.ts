@@ -1471,6 +1471,8 @@ const de: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Wird für E-Mails ohne eigene Schriften verwendet, und für alle E-Mails, wenn die Einstellung darunter aus ist.',
   'settingsPanel.toggle.senderFonts': 'E-Mails eigene Schriften erlauben',
   'settingsPanel.hint.senderFonts': 'Gestaltete E-Mails werden so dargestellt, wie sie geschrieben wurden. Es wird nichts geladen: eine Schrift ist entweder schon auf diesem Gerät oder es wird die Schrift darüber verwendet. Aus stellt jede E-Mail in deiner Leseschrift dar.',
+  'settingsPanel.toggle.relativeURLs': 'Relative URLs in E-Mails erlauben',
+  'settingsPanel.hint.relativeURLs': 'Erlaubt Links und Ressourcen wie image.jpg oder page.html relativ zur E-Mail. Dokumentlinks wie #section bleiben auch bei ausgeschalteter Option verfügbar.',
   'settingsPanel.bodyFont.groupCurated': 'Standard',
   'settingsPanel.bodyFont.groupSystem': 'Auf diesem Computer installiert',
   'settingsPanel.label.uiFont': 'Oberflächenschrift',

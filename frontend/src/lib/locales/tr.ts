@@ -1471,6 +1471,8 @@ const tr: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Kendi yazı tiplerini getirmeyen e-postaları ve aşağıdaki ayar kapalıyken her e-postayı işlemek için kullanılır.',
   'settingsPanel.toggle.senderFonts': 'E-postaların kendi yazı tiplerini kullanmasına izin ver',
   'settingsPanel.hint.senderFonts': 'Tasarlanmış posta, yazıldığı gibi okunur. Hiçbir şey indirilmez: bir yazı tipi ya zaten bu makinede vardır ya da yukarıdaki yazı tipi kullanılır. Kapalı, her e-postayı okuyucu yazı tipinize koyar.',
+  'settingsPanel.toggle.relativeURLs': 'Postalarda göreli URL’lere izin ver',
+  'settingsPanel.hint.relativeURLs': 'image.jpg veya page.html gibi bağlantıların ve kaynakların e-postaya göre çözülmesine izin verir. #section gibi belge bağlantıları kapalıyken de kullanılabilir.',
   'settingsPanel.bodyFont.groupCurated': 'Standart',
   'settingsPanel.bodyFont.groupSystem': 'Bu bilgisayarda kurulu',
   'settingsPanel.label.uiFont': 'Arayüz yazı tipi',

@@ -1471,6 +1471,8 @@ const en: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Used to render emails that do not bring their own fonts, and every email when the setting below is off.',
   'settingsPanel.toggle.senderFonts': 'Let emails use their own fonts',
   'settingsPanel.hint.senderFonts': 'Designed mail reads the way it was written. Nothing is downloaded: a font is either already on this machine or the font above is used instead. Off puts every email in your reader font.',
+  'settingsPanel.toggle.relativeURLs': 'Allow relative URLs in mail',
+  'settingsPanel.hint.relativeURLs': 'Allows links and resources such as image.jpg or page.html to resolve relative to the email. Document links such as #section remain available when this is off.',
   'settingsPanel.bodyFont.groupCurated': 'Standard',
   'settingsPanel.bodyFont.groupSystem': 'Installed on this computer',
   'settingsPanel.label.uiFont': 'Interface font',

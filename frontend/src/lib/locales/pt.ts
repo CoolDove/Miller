@@ -1465,6 +1465,8 @@ const pt: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Usado para renderizar emails que não trazem as suas próprias fontes, e cada email quando a definição abaixo está desligada.',
   'settingsPanel.toggle.senderFonts': 'Deixar emails usar as suas próprias fontes',
   'settingsPanel.hint.senderFonts': 'Correio desenhado lê-se como foi escrito. Nada é transferido: uma fonte já está nesta máquina ou a fonte acima é usada em vez disso. Desligado põe cada email na sua fonte de leitor.',
+  'settingsPanel.toggle.relativeURLs': 'Permitir URLs relativas no email',
+  'settingsPanel.hint.relativeURLs': 'Permite resolver ligações e recursos como image.jpg ou page.html relativamente ao email. Ligações internas como #section continuam disponíveis quando desativado.',
   'settingsPanel.bodyFont.groupCurated': 'Padrão',
   'settingsPanel.bodyFont.groupSystem': 'Instalado neste computador',
   'settingsPanel.label.uiFont': 'Fonte da interface',

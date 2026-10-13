@@ -186,7 +186,7 @@ func (a *App) renderHTML(html string, atts []storage.Attachment, allowRemote boo
 		html = mailview.StripTrackers(html, mailview.ScanRemoteImages(html).TrackerURLs())
 	}
 	resolved := mailview.ResolveCIDs(html, a.inlineDataURLs(atts))
-	return mailview.Sanitize(resolved, allowRemote, a.senderFonts())
+	return mailview.SanitizeWithRelativeURLs(resolved, allowRemote, a.senderFonts(), a.boolSetting(settingRelativeURLs, false))
 }
 
 // senderFonts reports whether a message may use the font families it asks for.
@@ -202,7 +202,7 @@ func (a *App) renderHTMLWithTrackers(html string, atts []storage.Attachment) str
 	if html == "" {
 		return ""
 	}
-	return mailview.Sanitize(mailview.ResolveCIDs(html, a.inlineDataURLs(atts)), true, a.senderFonts())
+	return mailview.SanitizeWithRelativeURLs(mailview.ResolveCIDs(html, a.inlineDataURLs(atts)), true, a.senderFonts(), a.boolSetting(settingRelativeURLs, false))
 }
 
 // blockTrackers reports the block-tracking-pixels preference. Off by default:

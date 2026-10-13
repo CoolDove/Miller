@@ -46,6 +46,10 @@ const snippetLen = 140
 // not for sanitization (bluemonday does the actual stripping by url scheme).
 var remoteURLPattern = regexp.MustCompile(`(?i)(src|background|href)\s*=\s*["']?\s*https?://|url\(\s*["']?\s*https?://`)
 
+var fragmentURLPattern = regexp.MustCompile(`(?i)(href\s*=\s*["'])#([^"']*)(["'])`)
+
+const fragmentURLPrefix = "https://pelton.invalid/#"
+
 // cidRefPattern matches a cid: url referencing an inline attachment by its
 // content id, with or without surrounding quotes.
 var cidRefPattern = regexp.MustCompile(`(?i)cid:([^"'>\s)]+)`)
@@ -55,11 +59,15 @@ var cidRefPattern = regexp.MustCompile(`(?i)cid:([^"'>\s)]+)`)
 // images and links may use: with remote blocked, only data: and cid: image
 // sources survive, so http(s) images (and tracking pixels) are dropped
 // entirely. allowFonts decides whether the sender's own typefaces survive.
-var policies = map[[2]bool]*bluemonday.Policy{
-	{false, false}: buildPolicy(false, false),
-	{false, true}:  buildPolicy(false, true),
-	{true, false}:  buildPolicy(true, false),
-	{true, true}:   buildPolicy(true, true),
+var policies = map[[3]bool]*bluemonday.Policy{
+	{false, false, false}: buildPolicy(false, false, false),
+	{false, true, false}:  buildPolicy(false, true, false),
+	{true, false, false}:  buildPolicy(true, false, false),
+	{true, true, false}:   buildPolicy(true, true, false),
+	{false, false, true}:  buildPolicy(false, false, true),
+	{false, true, true}:   buildPolicy(false, true, true),
+	{true, false, true}:   buildPolicy(true, false, true),
+	{true, true, true}:    buildPolicy(true, true, true),
 }
 
 // buildPolicy returns a sanitizer policy. allowRemote decides whether remote
@@ -67,7 +75,7 @@ var policies = map[[2]bool]*bluemonday.Policy{
 // sources are kept. allowFonts keeps the font families the message asks for,
 // so designed mail reads the way it was written instead of everything arriving
 // in the reader's own font.
-func buildPolicy(allowRemote, allowFonts bool) *bluemonday.Policy {
+func buildPolicy(allowRemote, allowFonts, allowRelativeURLs bool) *bluemonday.Policy {
 	p := bluemonday.UGCPolicy()
 
 	// allow images with sizing/alt but constrain their source scheme below.
@@ -135,12 +143,13 @@ func buildPolicy(allowRemote, allowFonts bool) *bluemonday.Policy {
 
 	// tables are heavily used by html mail.
 	p.AllowTables()
+	p.AllowAttrs("name").Matching(regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_.:-]*$`)).OnElements("a")
 
 	// urls have to be parsed before any scheme rule applies at all.
 	// Relative urls go with it: mail has no base to be relative to, so a
 	// relative src was never going to resolve to anything.
 	p.RequireParseableURLs(true)
-	p.AllowRelativeURLs(false)
+	p.AllowRelativeURLs(allowRelativeURLs)
 
 	if allowRemote {
 		p.AllowURLSchemes("http", "https", "mailto", "data", "cid")
@@ -172,11 +181,32 @@ func buildPolicy(allowRemote, allowFonts bool) *bluemonday.Policy {
 // allowFonts keeps the message's own font families; with it off everything
 // renders in the reader's font.
 func Sanitize(html string, allowRemote, allowFonts bool) string {
-	p := policies[[2]bool{allowRemote, allowFonts}]
+	return SanitizeWithRelativeURLs(html, allowRemote, allowFonts, false)
+}
+
+// SanitizeWithRelativeURLs cleans untrusted mail HTML and optionally permits
+// ordinary relative URLs. Document fragments are always retained because they
+// never cause a network request and are used by newsletter table-of-contents
+// links. They pass through the sanitizer under a private scheme and are
+// restored after sanitization.
+func SanitizeWithRelativeURLs(html string, allowRemote, allowFonts, allowRelativeURLs bool) string {
+	html = preserveFragments(html)
+	p := policies[[3]bool{allowRemote, allowFonts, allowRelativeURLs}]
+	var sanitized string
 	if allowRemote {
-		return p.Sanitize(html)
+		sanitized = p.Sanitize(html)
+	} else {
+		sanitized = p.Sanitize(stripRemoteMedia(stripRemoteImages(html)))
 	}
-	return p.Sanitize(stripRemoteMedia(stripRemoteImages(html)))
+	return restoreFragments(sanitized)
+}
+
+func preserveFragments(html string) string {
+	return fragmentURLPattern.ReplaceAllString(html, `${1}`+fragmentURLPrefix+`${2}${3}`)
+}
+
+func restoreFragments(html string) string {
+	return strings.ReplaceAll(html, fragmentURLPrefix, "#")
 }
 
 // HasRemoteContent reports whether the raw html references any remote http(s)

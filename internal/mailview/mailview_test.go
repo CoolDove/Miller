@@ -193,3 +193,27 @@ func TestSanitizeDirectionDoesNotRescueBlockedElements(t *testing.T) {
 		t.Errorf("Sanitize() dropped the direction of the surviving paragraph: %q", got)
 	}
 }
+
+func TestSanitizeKeepsFragmentLinksAndLegacyAnchors(t *testing.T) {
+	html := `<a href="#item-1">Item</a><a name="item-1"></a><img src="relative.png">`
+	got := Sanitize(html, false, false)
+
+	if !strings.Contains(got, `href="#item-1"`) {
+		t.Fatalf("fragment link was removed: %q", got)
+	}
+	if !strings.Contains(got, `name="item-1"`) {
+		t.Fatalf("legacy anchor was removed: %q", got)
+	}
+	if strings.Contains(got, `src="relative.png"`) {
+		t.Fatalf("relative resource survived with the default policy: %q", got)
+	}
+}
+
+func TestSanitizeAllowsRelativeURLsWhenRequested(t *testing.T) {
+	html := `<a href="chapter.html">Chapter</a><img src="relative.png">`
+	got := SanitizeWithRelativeURLs(html, false, false, true)
+
+	if !strings.Contains(got, `href="chapter.html"`) || !strings.Contains(got, `src="relative.png"`) {
+		t.Fatalf("relative URLs were not retained: %q", got)
+	}
+}

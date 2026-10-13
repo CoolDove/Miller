@@ -1471,6 +1471,8 @@ const ar: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'يُستخدم لعرض الرسائل التي لا تحمل خطوطها الخاصة، وكل رسالة عندما يكون الإعداد أدناه معطلاً.',
   'settingsPanel.toggle.senderFonts': 'السماح للرسائل باستخدام خطوطها الخاصة',
   'settingsPanel.hint.senderFonts': 'يظهر البريد المصمم كما كُتب. لا يُنزَّل شيء: الخط إما موجود مسبقاً على هذا الجهاز أو يُستخدم الخط أعلاه بدلاً منه. الإيقاف يضع كل رسالة في خط قارئك.',
+  'settingsPanel.toggle.relativeURLs': 'السماح بعناوين URL النسبية في البريد',
+  'settingsPanel.hint.relativeURLs': 'يسمح بحل الروابط والموارد مثل image.jpg أو page.html نسبةً إلى البريد. تظل روابط المستند مثل #section متاحة عند إيقافه.',
   'settingsPanel.bodyFont.groupCurated': 'قياسي',
   'settingsPanel.bodyFont.groupSystem': 'مثبَّت على هذا الجهاز',
   'settingsPanel.label.uiFont': 'خط الواجهة',

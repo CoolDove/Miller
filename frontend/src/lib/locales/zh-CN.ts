@@ -1472,6 +1472,8 @@ const zhCN: Record<string, string> = {
   'settingsPanel.hint.bodyFont': '用于渲染未自带字体的邮件；当下方选项关闭时，用于所有邮件。',
   'settingsPanel.toggle.senderFonts': '允许邮件使用自带字体',
   'settingsPanel.hint.senderFonts': '精心设计的邮件按原样呈现。不会下载任何内容：字体要么本机已有，要么使用上方设定的字体。关闭后所有邮件一律使用你的阅读字体。',
+  'settingsPanel.toggle.relativeURLs': '允许邮件使用相对 URL',
+  'settingsPanel.hint.relativeURLs': '允许 image.jpg、page.html 等链接和资源相对于邮件解析。即使关闭，#section 这类文档内链接仍然可用。',
   'settingsPanel.bodyFont.groupCurated': '标准字体',
   'settingsPanel.bodyFont.groupSystem': '本机已安装',
   'settingsPanel.label.uiFont': '界面字体',

@@ -1471,6 +1471,8 @@ const fr: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Utilisée pour les e-mails sans polices propres, et pour tous les e-mails quand l’option ci-dessous est désactivée.',
   'settingsPanel.toggle.senderFonts': 'Autoriser les e-mails à utiliser leurs polices',
   'settingsPanel.hint.senderFonts': 'Les e-mails mis en page s’affichent comme ils ont été écrits. Rien n’est téléchargé : une police est déjà présente sur cette machine, sinon celle ci-dessus est utilisée. Désactivée, chaque e-mail s’affiche dans votre police de lecture.',
+  'settingsPanel.toggle.relativeURLs': 'Autoriser les URL relatives dans les e-mails',
+  'settingsPanel.hint.relativeURLs': 'Autorise les liens et ressources comme image.jpg ou page.html à être résolus par rapport à l’e-mail. Les liens internes comme #section restent disponibles même désactivés.',
   'settingsPanel.bodyFont.groupCurated': 'Standard',
   'settingsPanel.bodyFont.groupSystem': 'Installées sur cet ordinateur',
   'settingsPanel.label.uiFont': "Police de l'interface",

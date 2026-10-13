@@ -1479,6 +1479,8 @@ const it: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Utilizzato per visualizzare le email che non includono i propri caratteri e tutte le email quando l\'impostazione sottostante è disattivata.',
   'settingsPanel.toggle.senderFonts': 'Consenti alle email di usare i propri caratteri',
   'settingsPanel.hint.senderFonts': 'I messaggi formattati vengono letti nel modo in cui sono stati scritti. Non viene scaricato nulla: il carattere è già presente su questo computer oppure viene utilizzato il carattere sopra specificato. Se disattivato, ogni email viene visualizzata con il carattere di lettura scelto.',
+  'settingsPanel.toggle.relativeURLs': 'Consenti URL relativi nelle email',
+  'settingsPanel.hint.relativeURLs': 'Consente di risolvere link e risorse come image.jpg o page.html rispetto all’email. I link interni come #section restano disponibili anche se disattivato.',
   'settingsPanel.bodyFont.groupCurated': 'Standard',
   'settingsPanel.bodyFont.groupSystem': 'Installati su questo computer',
   'settingsPanel.label.uiFont': 'Carattere dell\'interfaccia',

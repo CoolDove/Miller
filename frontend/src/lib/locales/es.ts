@@ -1471,6 +1471,8 @@ const es: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Se usa para correos sin fuentes propias, y para todos los correos cuando la opción de abajo está desactivada.',
   'settingsPanel.toggle.senderFonts': 'Permitir que los correos usen sus fuentes',
   'settingsPanel.hint.senderFonts': 'El correo con diseño se lee como fue escrito. No se descarga nada: la fuente ya está en este equipo o se usa la de arriba. Desactivado, cada correo se muestra con tu fuente de lectura.',
+  'settingsPanel.toggle.relativeURLs': 'Permitir URL relativas en el correo',
+  'settingsPanel.hint.relativeURLs': 'Permite resolver enlaces y recursos como image.jpg o page.html relativos al correo. Los enlaces internos como #section siguen disponibles aunque esté desactivado.',
   'settingsPanel.bodyFont.groupCurated': 'Estándar',
   'settingsPanel.bodyFont.groupSystem': 'Instaladas en este equipo',
   'settingsPanel.label.uiFont': 'Tipografía de la interfaz',

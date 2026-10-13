@@ -1471,6 +1471,8 @@ const nl: Record<string, string> = {
   'settingsPanel.hint.bodyFont': 'Gebruikt voor e-mails zonder eigen lettertypen, en voor alle e-mails als de instelling hieronder uit staat.',
   'settingsPanel.toggle.senderFonts': 'E-mails hun eigen lettertypen laten gebruiken',
   'settingsPanel.hint.senderFonts': 'Vormgegeven e-mail leest zoals hij bedoeld is. Er wordt niets gedownload: een lettertype staat al op dit apparaat, anders wordt het lettertype hierboven gebruikt. Uit zet elke e-mail in je leeslettertype.',
+  'settingsPanel.toggle.relativeURLs': 'Relatieve URL’s in e-mail toestaan',
+  'settingsPanel.hint.relativeURLs': 'Staat links en bronnen zoals image.jpg of page.html toe om relatief aan de e-mail te worden opgelost. Interne links zoals #section blijven beschikbaar als dit uit staat.',
   'settingsPanel.bodyFont.groupCurated': 'Standaard',
   'settingsPanel.bodyFont.groupSystem': 'Geïnstalleerd op deze computer',
   'settingsPanel.label.uiFont': 'Interfacelettertype',
