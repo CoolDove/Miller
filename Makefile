@@ -67,7 +67,12 @@ build-nix:
 # app at a separate Pelton-dev config/database directory (see
 # internal/storage/db.go), so testing here never touches a real install's
 # accounts, mail cache or settings.
+
+# The Go entrypoint embeds frontend/dist, so generate bindings only after the
+# frontend has produced that directory. Wails still uses the dev server below
+# for hot reload after this bootstrap build.
 run: deps
+	cd frontend && pnpm run build
 	wails generate module
 	PELTON_DEV=1 wails dev $(WEBKIT_TAGS) -ldflags "$(LDFLAGS)"
 
