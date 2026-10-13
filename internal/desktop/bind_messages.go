@@ -196,7 +196,7 @@ func (a *App) OpenMessageInBrowser(id int64) error {
 	}
 	path := file.Name()
 	defer file.Close()
-	document := "<!doctype html><html><head><meta charset=\"utf-8\"><title>" + stdhtml.EscapeString(m.Subject) + "</title></head><body>" + body + "</body></html>"
+	document := "<!doctype html><html><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"><title>" + stdhtml.EscapeString(m.Subject) + "</title><style>html{background:#f4f4f4}body{box-sizing:border-box;max-width:860px;margin:24px auto;padding:28px 32px;background:#fff;color:#1a1a1a;overflow-wrap:break-word}img,video{max-width:100%;height:auto}table{max-width:100%}@media(max-width:920px){body{margin:0;padding:20px 16px}}</style></head><body>" + body + "</body></html>"
 	if _, err := file.WriteString(document); err != nil {
 		return fmt.Errorf("write browser message: %w", err)
 	}
