@@ -407,7 +407,8 @@ ${bodyHtml}
   /* the html body iframe now sizes itself to its content (single scrollbar in the
      outer .scroll), so the wrap hugs it instead of stretching and leaving a gap. */
   .body-wrap {
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    min-height: 0;
     margin-top: var(--space-4);
     display: flex;
     flex-direction: column;

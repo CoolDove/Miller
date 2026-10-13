@@ -36,7 +36,6 @@
   $: if (detail.id !== lastId) {
     lastId = detail.id
     remoteLoaded = detail.remoteAllowed
-    frameHeight = 320
   }
 
   $: senderLabel = displayName(detail.fromName, detail.fromAddress)
@@ -94,7 +93,7 @@
     // document always renders on a fixed white background, so a badge that
     // followed the dark theme would be a dark-mode green on white.
     const css = `
-  html,body{margin:0;background:#ffffff;color:#1a1a1a;font-family:${font};font-size:${fontSize}px;line-height:1.5;}
+  html,body{margin:0;background:#ffffff;color:#1a1a1a;font-family:${font};font-size:${fontSize}px;line-height:1.5;overflow-y:auto;overflow-x:auto;overscroll-behavior:contain;}
   body{padding:4px 2px;word-wrap:break-word;overflow-wrap:break-word;}
   a{color:#1a56db;}
   img{max-width:100%;height:auto;}
@@ -119,8 +118,8 @@
     const open = '<sty' + 'le>'
     const close = '</sty' + 'le>'
     // External links are relayed to the parent instead of navigating this
-    // sandboxed iframe. Fragment links are relayed too because the iframe is
-    // sized to the mail's full height and the scrollbar belongs to the parent.
+    // sandboxed iframe. Fragment links stay inside the iframe because it now
+    // owns the HTML body's scrollbar.
     //
     // the contextmenu half is only wired up when a scan can actually be
     // offered: with the integration off there is nothing to put in a menu, and
@@ -128,11 +127,16 @@
     const contextHandler = offerScan
       ? 'document.addEventListener("contextmenu",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!/^https?:/i.test(href))return;e.preventDefault();window.parent.postMessage({peltonContextLink:href,x:e.clientX,y:e.clientY},"*")});'
       : ''
+    // Some embedded WebViews do not perform the iframe's default wheel scroll.
+    // Move the actual root scroller and only consume input when it moved.
+    const wheelHandler = 'document.addEventListener("wheel",function(e){var s=document.scrollingElement;if(!s)return;var m=e.deltaMode===1?parseFloat(getComputedStyle(document.body).lineHeight)||16:e.deltaMode===2?s.clientHeight:1;var x=s.scrollLeft,y=s.scrollTop;s.scrollBy(e.deltaX*m,e.deltaY*m);if(s.scrollLeft!==x||s.scrollTop!==y)e.preventDefault()},{passive:false});'
     const script =
       '<scr' +
       'ipt nonce="' +
       nonce +
-      '">document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;if(/^#/i.test(href)){e.preventDefault();var f=href.slice(1),d;try{f=decodeURIComponent(f)}catch(_){}d=document.getElementById(f)||Array.prototype.slice.call(document.getElementsByTagName("a")).find(function(x){return x.getAttribute("name")===f});if(d){var r=d.getBoundingClientRect(),root=document.documentElement.getBoundingClientRect();window.parent.postMessage({peltonScrollFragment:f,peltonTargetTop:r.top-root.top},"*")}return;}e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
+      '">' +
+      wheelHandler +
+      'document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;if(/^#/i.test(href)){e.preventDefault();var f=href.slice(1),d;try{f=decodeURIComponent(f)}catch(_){}d=document.getElementById(f)||Array.prototype.slice.call(document.getElementsByTagName("a")).find(function(x){return x.getAttribute("name")===f});if(d){d.scrollIntoView({behavior:"smooth",block:"start"})}return;}e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
       contextHandler +
       '</scr' +
       'ipt>'
@@ -166,37 +170,10 @@
   // links the way html mail's own <a> tags already are.
   $: plainSegments = detail.isHtml ? [] : linkifySegments(detail.bodyPlain)
 
-  // the iframe is sized to its content height so the reading pane has a single
-  // scrollbar instead of a nested one (which the interface zoom made worse).
-  // allow-same-origin lets us measure the content height from the parent.
+  // The iframe owns scrolling for HTML mail so fragment navigation stays in the
+  // same document as its target. The parent still scrolls the surrounding header
+  // and attachment areas.
   let frame: HTMLIFrameElement
-  let frameHeight = 320
-  let resizeObserver: ResizeObserver | null = null
-
-  // measuring documentElement/body.scrollHeight is unreliable here: per spec
-  // scrollHeight can never be smaller than the viewport (the iframe's own
-  // current height), so once the iframe grows it can never be measured back
-  // down, and the height only ratchets upward, leaving a growing gap below
-  // short emails. a ResizeObserver on the body's own border box reports its
-  // true content size independent of the iframe's current height.
-  function measure(): void {
-    const body = readyBody()
-    if (!body) {
-      return
-    }
-    const h = Math.max(40, Math.ceil(body.getBoundingClientRect().height))
-    // hysteresis: on fractional display scaling (125%/150%, common on Fedora's
-    // WebKitGTK) the applied iframe height rounds to a device pixel differently
-    // from how getBoundingClientRect measures it back, so writing every reading
-    // to frameHeight makes the body flip between two adjacent pixel heights
-    // forever, which reads as continuous shaking. only apply a change that moves
-    // the height by more than a pixel, which settles the loop while still
-    // tracking real content growth and shrink.
-    if (Math.abs(h - frameHeight) <= 1) {
-      return
-    }
-    frameHeight = h
-  }
 
   // readyBody returns the iframe's body only once it's our own rendered
   // srcdoc, not the iframe's transient initial blank document.
@@ -210,22 +187,17 @@
   // poll running against a document that's already been replaced.
   let readyPollHandle = 0
 
-  // attachInteractivity wires up sizing for the iframe's current document.
+  // attachInteractivity wires up decorations for the iframe's current document.
   // Link clicks are handled separately, by the nonce-scoped script inside the
   // srcdoc itself (see buildSrcdoc) relaying to onWindowMessage below - not by
   // a listener attached here from the parent, which proved unreliable. This
   // is idempotent per document: calling it twice for the same load is
-  // harmless since a fresh resizeObserver just replaces the previous one.
+  // harmless since a fresh srcdoc replaces the document.
   function attachInteractivity(): void {
-    resizeObserver?.disconnect()
-    resizeObserver = null
     const body = readyBody()
     if (!body) {
       return
     }
-    measure()
-    resizeObserver = new ResizeObserver(() => measure())
-    resizeObserver.observe(body)
     // a fresh srcdoc replaces the document, so any badges from the previous
     // render are gone and have to be put back.
     decorateLinks(get(linkVerdicts), suspectLinks)
@@ -270,12 +242,7 @@
     if (event.source !== frame?.contentWindow) {
       return
     }
-    const data = event.data as { peltonOpenUrl?: unknown; peltonScrollFragment?: unknown; peltonTargetTop?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
-    const fragment = data?.peltonScrollFragment
-    if (typeof fragment === 'string' && typeof data?.peltonTargetTop === 'number') {
-      scrollToFragment(data.peltonTargetTop)
-      return
-    }
+    const data = event.data as { peltonOpenUrl?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
     const href = data?.peltonOpenUrl
     if (typeof href === 'string' && /^(https?:|mailto:)/i.test(href)) {
       BrowserOpenURL(href)
@@ -285,29 +252,6 @@
     if (typeof link === 'string' && typeof data?.x === 'number' && typeof data?.y === 'number') {
       openLinkMenu(link, data.x, data.y)
     }
-  }
-
-  // Scroll the outer reading pane because the iframe is sized to its full
-  // content and therefore has no useful internal scrollbar of its own.
-  function scrollToFragment(targetTop: number): void {
-    const scroll = frame?.closest('.scroll') as HTMLElement | null
-    if (!frame || !scroll || !Number.isFinite(targetTop)) {
-      return
-    }
-    const scrollRect = scroll.getBoundingClientRect()
-    const frameRect = frame.getBoundingClientRect()
-    // The target is measured in iframe CSS pixels while the iframe itself is
-    // laid out in the parent document's pixels. Derive the cross-document
-    // scale from the iframe's rendered and inner widths instead of guessing
-    // from its height (which can include content and rounding differences).
-    // clientWidth is the layout viewport and ignores the iframe document's
-    // rendered zoom. The root rect is in the same rendered coordinate system
-    // as the target rect sent by the iframe.
-    const innerWidth = frame.contentDocument?.documentElement.getBoundingClientRect().width ?? 0
-    const scale = innerWidth > 0 ? frameRect.width / innerWidth : 1
-    const frameTop = scroll.scrollTop + frameRect.top - scrollRect.top
-    const top = frameTop + targetTop * scale
-    scroll.scrollTo({ top: Math.max(0, top), behavior: 'smooth' })
   }
 
   // openLinkMenu shows the scan action for a link the user right-clicked inside
@@ -416,7 +360,6 @@
   window.addEventListener('message', onWindowMessage)
 
   onDestroy(() => {
-    resizeObserver?.disconnect()
     cancelAnimationFrame(readyPollHandle)
     window.removeEventListener('message', onWindowMessage)
   })
@@ -604,15 +547,16 @@
 {/if}
 
 {#if detail.isHtml}
-  <iframe
-    class="body-frame"
-    title={$t('detail.mailBody.iframeTitle')}
-    sandbox="allow-same-origin allow-scripts allow-popups allow-top-navigation-by-user-activation"
-    bind:this={frame}
-    on:load={onFrameLoad}
-    style={`height:${frameHeight}px`}
-    {srcdoc}
-  ></iframe>
+  <div class="body-frame-wrap">
+    <iframe
+      class="body-frame"
+      title={$t('detail.mailBody.iframeTitle')}
+      sandbox="allow-same-origin allow-scripts allow-popups allow-top-navigation-by-user-activation"
+      bind:this={frame}
+      on:load={onFrameLoad}
+      {srcdoc}
+    ></iframe>
+  </div>
 {:else}
   <!-- dir="auto" for the same reason as the html document above: a plain-text
        message written right to left reads that way, whatever the interface is
@@ -818,25 +762,27 @@
     color: var(--text-tertiary);
   }
 
-  /* height is set inline from the measured content height so the pane has a single
-     scrollbar. a min-height avoids a flash of collapse before the first measure.
-     the iframe is a nested browsing context, but its rendering still gets pulled
-     along by the ancestor's CSS zoom (the app-wide interface scale, applied on
-     <html> in theme.ts) since zoom is not a normal non-inherited property for
-     replaced elements. that means email content ends up zoomed twice: once by
-     its own messageFontSize, and again by whatever interface scale the user
-     picked. dividing back out by --ui-scale here cancels the ancestor's zoom so
-     the reading pane always renders at true size regardless of interface zoom. */
+  .body-frame-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    display: flex;
+    overflow: hidden;
+  }
+
   .body-frame {
     display: block;
+    flex: 1 1 auto;
     width: 100%;
-    min-height: 120px;
+    height: 100%;
+    min-height: 0;
     border: none;
     /* fixed, not theme-derived: matches the fixed light background the
        srcdoc itself renders on (see buildSrcdoc), so there is no dark flash
        around/before the html mail content in dark mode. */
     background: #ffffff;
     zoom: calc(1 / var(--ui-scale, 1));
+    overflow: auto;
   }
 
   .body-plain {
