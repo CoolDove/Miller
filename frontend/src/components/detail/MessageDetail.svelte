@@ -78,38 +78,29 @@ import { setFlagged, deleteMessage, archiveMessage, scanMessage, openMessageInBr
   let scrollEl: HTMLDivElement | undefined
   let scrolledId = -1
 
-  // bodyScrollTop is the html body's own scroll offset, reported by the MailBody
-  // iframe, which owns that scrollbar. scrollTop is this pane's offset, which is
-  // where a plain-text body scrolls. Whichever one holds the body decides
-  // whether the back-to-top button shows.
+  // The body can scroll in one of two places: html mail may scroll inside its
+  // sandboxed iframe (offset reported by MailBody as bodyScrollTop), and
+  // plain-text or locked-pgp bodies scroll here in the pane (scrollTop). Which
+  // one actually moves depends on the engine's layout, so the button watches
+  // both and acts on whichever is past the threshold.
   let bodyScrollTop = 0
   let scrollTop = 0
   let mailBody: MailBody
 
   // past this many pixels the way back to the top is worth offering.
   const BACK_TO_TOP_AFTER = 180
-
-  // the body renders in the iframe only for html mail that isn't behind its
-  // encryption notice; everything else (plain text, locked pgp) scrolls here.
-  $: bodyInFrame =
-    ($messageDetail.data?.isHtml ?? false) &&
-    $messageDetail.data?.pgpState !== '' &&
-    $messageDetail.data?.pgpState !== 'open'
-  $: showBackToTop = !!$messageDetail.data && (bodyInFrame ? bodyScrollTop : scrollTop) > BACK_TO_TOP_AFTER
+  $: showBackToTop = !!$messageDetail.data && Math.max(bodyScrollTop, scrollTop) > BACK_TO_TOP_AFTER
 
   function onScroll(event: Event): void {
     scrollTop = (event.currentTarget as HTMLElement).scrollTop
   }
 
-  // backToTop returns whichever scroller holds the body to the top: the iframe
-  // for html mail, this pane for everything else.
+  // backToTop returns both scrollers to the top. Only the one that is actually
+  // scrolled moves; the other is already at rest.
   function backToTop(): void {
-    if (bodyInFrame) {
-      mailBody?.scrollToTop()
-      bodyScrollTop = 0
-      return
-    }
+    mailBody?.scrollToTop()
     scrollEl?.scrollTo({ top: 0, behavior: 'smooth' })
+    bodyScrollTop = 0
   }
 
   $: if ($messageDetail.data && $messageDetail.data.id !== scrolledId) {

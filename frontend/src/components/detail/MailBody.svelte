@@ -136,8 +136,9 @@
     const wheelHandler = 'document.addEventListener("wheel",function(e){var s=document.scrollingElement;if(!s)return;var m=e.deltaMode===1?parseFloat(getComputedStyle(document.body).lineHeight)||16:e.deltaMode===2?s.clientHeight:1;var x=s.scrollLeft,y=s.scrollTop;s.scrollBy(e.deltaX*m,e.deltaY*m);if(s.scrollLeft!==x||s.scrollTop!==y)e.preventDefault()},{passive:false});'
     // report the body's own scroll offset to the parent so it can offer a way
     // back to the top once the reader is deep into a long message. scroll does
-    // not bubble, but a window listener still catches the document scrolling.
-    const scrollHandler = 'window.addEventListener("scroll",function(){var s=document.scrollingElement;window.parent.postMessage({peltonBodyScrollTop:s?s.scrollTop:0},"*")},{passive:true});'
+    // not bubble, so the listener goes on the capture phase as well as window,
+    // to catch whichever element actually ends up holding the scrollbar.
+    const scrollHandler = 'function _p(){var s=document.scrollingElement;window.parent.postMessage({peltonBodyScrollTop:s?s.scrollTop:0},"*")}window.addEventListener("scroll",_p,{passive:true});document.addEventListener("scroll",_p,{passive:true,capture:true});'
     const script =
       '<scr' +
       'ipt nonce="' +
@@ -203,6 +204,17 @@
   // poll running against a document that's already been replaced.
   let readyPollHandle = 0
 
+  // scrollWin is the iframe window the parent-side scroll listener is on, so a
+  // reload (which swaps the window) can move it rather than stacking listeners.
+  let scrollWin: Window | null = null
+
+  // onFrameScroll reports the iframe document's scroll offset. The srcdoc's own
+  // script also posts this, but that path is unseen if the script is stripped,
+  // so this same-origin listener is the belt to its braces.
+  function onFrameScroll(): void {
+    dispatch('bodyscroll', frame?.contentDocument?.scrollingElement?.scrollTop ?? 0)
+  }
+
   // attachInteractivity wires up decorations for the iframe's current document.
   // Link clicks are handled separately, by the nonce-scoped script inside the
   // srcdoc itself (see buildSrcdoc) relaying to onWindowMessage below - not by
@@ -217,6 +229,12 @@
     // a fresh srcdoc replaces the document, so it starts at the top and any
     // scroll depth reported from the previous render no longer applies.
     dispatch('bodyscroll', 0)
+    const win = frame?.contentWindow ?? null
+    if (win && win !== scrollWin) {
+      scrollWin?.removeEventListener('scroll', onFrameScroll)
+      win.addEventListener('scroll', onFrameScroll, { passive: true })
+      scrollWin = win
+    }
     // a fresh srcdoc replaces the document, so any badges from the previous
     // render are gone and have to be put back.
     decorateLinks(get(linkVerdicts), suspectLinks)
@@ -385,6 +403,7 @@
 
   onDestroy(() => {
     cancelAnimationFrame(readyPollHandle)
+    scrollWin?.removeEventListener('scroll', onFrameScroll)
     window.removeEventListener('message', onWindowMessage)
   })
 
