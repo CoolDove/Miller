@@ -738,6 +738,7 @@ const tr: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'bir tanımlayıcı taşıyor',
   'detail.mailBody.pixelReason.lone-image': 'o ana makineden gelen tek görsel',
   'detail.mailBody.iframeTitle': 'İleti içeriği',
+  'detail.mailBody.backToTop': 'Başa dön',
   'detail.print.to': 'Kime:',
   'detail.print.dialogFailed': 'Yazdırma penceresi açılamadı.',
   'detail.loadingMessage': 'İleti yükleniyor',

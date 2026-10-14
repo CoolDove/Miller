@@ -742,6 +742,7 @@ const zhCN: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': '带有标识符',
   'detail.mailBody.pixelReason.lone-image': '来自该主机的唯一图片',
   'detail.mailBody.iframeTitle': '邮件内容',
+  'detail.mailBody.backToTop': '回到顶部',
   'detail.print.to': '收件人：',
   'detail.print.dialogFailed': '无法打开打印对话框。',
   'detail.loadingMessage': '正在加载邮件',

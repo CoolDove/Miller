@@ -6,6 +6,7 @@
   import DetailHeader from './DetailHeader.svelte'
   import ActionToolbar from './ActionToolbar.svelte'
   import MailBody from './MailBody.svelte'
+  import { IconArrowUp } from '@tabler/icons-svelte'
   import ProtectedNotice from './ProtectedNotice.svelte'
   import PhishingNotice from './PhishingNotice.svelte'
   import AttachmentList from './AttachmentList.svelte'
@@ -76,8 +77,45 @@ import { setFlagged, deleteMessage, archiveMessage, scanMessage, openMessageInBr
   // the viewport and the pane looks blank until you scroll back up.
   let scrollEl: HTMLDivElement | undefined
   let scrolledId = -1
+
+  // bodyScrollTop is the html body's own scroll offset, reported by the MailBody
+  // iframe, which owns that scrollbar. scrollTop is this pane's offset, which is
+  // where a plain-text body scrolls. Whichever one holds the body decides
+  // whether the back-to-top button shows.
+  let bodyScrollTop = 0
+  let scrollTop = 0
+  let mailBody: MailBody
+
+  // past this many pixels the way back to the top is worth offering.
+  const BACK_TO_TOP_AFTER = 180
+
+  // the body renders in the iframe only for html mail that isn't behind its
+  // encryption notice; everything else (plain text, locked pgp) scrolls here.
+  $: bodyInFrame =
+    ($messageDetail.data?.isHtml ?? false) &&
+    $messageDetail.data?.pgpState !== '' &&
+    $messageDetail.data?.pgpState !== 'open'
+  $: showBackToTop = !!$messageDetail.data && (bodyInFrame ? bodyScrollTop : scrollTop) > BACK_TO_TOP_AFTER
+
+  function onScroll(event: Event): void {
+    scrollTop = (event.currentTarget as HTMLElement).scrollTop
+  }
+
+  // backToTop returns whichever scroller holds the body to the top: the iframe
+  // for html mail, this pane for everything else.
+  function backToTop(): void {
+    if (bodyInFrame) {
+      mailBody?.scrollToTop()
+      bodyScrollTop = 0
+      return
+    }
+    scrollEl?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   $: if ($messageDetail.data && $messageDetail.data.id !== scrolledId) {
     scrolledId = $messageDetail.data.id
+    bodyScrollTop = 0
+    scrollTop = 0
     void resetScroll()
   }
 
@@ -302,25 +340,38 @@ ${bodyHtml}
       <SourceModal messageId={detail.id} on:close={() => (sourceOpen = false)} />
     {/if}
 
-    <div class="scroll selectable" bind:this={scrollEl}>
-      <DetailHeader {detail} />
-      <div class="body-wrap">
-        {#if detail.phishing.level !== 'none'}
-          <PhishingNotice report={detail.phishing} messageId={detail.id} />
-        {/if}
-        {#if detail.pgpState !== '' && detail.pgpState !== 'open'}
-          <!-- the body here is still the armor, so showing it would put
-               ciphertext in front of the reader. -->
-          <ProtectedNotice
-            state={detail.pgpState}
-            messageId={detail.id}
-            on:opened={() => void loadMessage(detail.id)}
-          />
-        {:else}
-          <MailBody {detail} />
-        {/if}
+    <div class="pane">
+      <div class="scroll selectable" bind:this={scrollEl} on:scroll={onScroll}>
+        <DetailHeader {detail} />
+        <div class="body-wrap">
+          {#if detail.phishing.level !== 'none'}
+            <PhishingNotice report={detail.phishing} messageId={detail.id} />
+          {/if}
+          {#if detail.pgpState !== '' && detail.pgpState !== 'open'}
+            <!-- the body here is still the armor, so showing it would put
+                 ciphertext in front of the reader. -->
+            <ProtectedNotice
+              state={detail.pgpState}
+              messageId={detail.id}
+              on:opened={() => void loadMessage(detail.id)}
+            />
+          {:else}
+            <MailBody {detail} bind:this={mailBody} on:bodyscroll={(e) => (bodyScrollTop = e.detail)} />
+          {/if}
+        </div>
+        <AttachmentList messageId={detail.id} attachments={detail.attachments} />
       </div>
-      <AttachmentList messageId={detail.id} attachments={detail.attachments} />
+      {#if showBackToTop}
+        <button
+          type="button"
+          class="back-top"
+          title={$t('detail.mailBody.backToTop')}
+          aria-label={$t('detail.mailBody.backToTop')}
+          on:click={backToTop}
+        >
+          <IconArrowUp size={16} stroke={1.8} />
+        </button>
+      {/if}
     </div>
   {/if}
 </section>
@@ -393,6 +444,16 @@ ${bodyHtml}
     flex-shrink: 0;
   }
 
+  /* a positioned, non-scrolling shell so the back-to-top button stays put while
+     the scroll area (or the body iframe) moves under it. */
+  .pane {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
   .scroll {
     flex: 1;
     /* min-height:0 is required for a flex child to scroll; without it the body
@@ -404,8 +465,33 @@ ${bodyHtml}
     flex-direction: column;
   }
 
-  /* the html body iframe now sizes itself to its content (single scrollbar in the
-     outer .scroll), so the wrap hugs it instead of stretching and leaving a gap. */
+  /* floats just left of the body's scrollbar, at the top of the reading pane. */
+  .back-top {
+    position: absolute;
+    top: var(--space-3);
+    inset-inline-end: calc(var(--pane-pad) + var(--space-5));
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--control-height);
+    height: var(--control-height);
+    padding: 0;
+    border: var(--hairline) solid var(--border-default);
+    border-radius: var(--radius-control);
+    background: var(--surface-overlay);
+    color: var(--text-secondary);
+    box-shadow: var(--shadow-overlay);
+    cursor: var(--cursor-action);
+  }
+
+  .back-top:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
+
+  /* the html body iframe fills this wrap and scrolls its own content, so the
+     wrap takes the remaining height instead of growing with the message. */
   .body-wrap {
     flex: 1 1 auto;
     min-height: 0;

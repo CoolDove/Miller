@@ -738,6 +738,7 @@ const nl: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'bevat een kenmerk',
   'detail.mailBody.pixelReason.lone-image': 'enige afbeelding van die host',
   'detail.mailBody.iframeTitle': 'Berichtinhoud',
+  'detail.mailBody.backToTop': 'Terug naar boven',
   'detail.print.to': 'Aan:',
   'detail.print.dialogFailed': 'Het afdrukvenster kon niet worden geopend.',
   'detail.loadingMessage': 'Bericht laden',

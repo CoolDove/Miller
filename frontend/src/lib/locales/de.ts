@@ -738,6 +738,7 @@ const de: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'enthält eine Kennung',
   'detail.mailBody.pixelReason.lone-image': 'einziges Bild von diesem Host',
   'detail.mailBody.iframeTitle': 'Nachrichteninhalt',
+  'detail.mailBody.backToTop': 'Nach oben',
   'detail.print.to': 'An:',
   'detail.print.dialogFailed': 'Der Druckdialog konnte nicht geöffnet werden.',
   'detail.loadingMessage': 'Nachricht wird geladen',

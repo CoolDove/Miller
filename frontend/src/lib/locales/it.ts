@@ -746,6 +746,7 @@ const it: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'contiene un identificatore',
   'detail.mailBody.pixelReason.lone-image': 'l\'unica immagine da quell\'host',
   'detail.mailBody.iframeTitle': 'Contenuto del messaggio',
+  'detail.mailBody.backToTop': 'Torna su',
   'detail.print.to': 'A:',
   'detail.print.dialogFailed': 'Impossibile aprire la finestra di stampa.',
   'detail.loadingMessage': 'Caricamento messaggio in corso',

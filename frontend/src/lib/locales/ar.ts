@@ -738,6 +738,7 @@ const ar: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'تحمل معرّفاً',
   'detail.mailBody.pixelReason.lone-image': 'الصورة الوحيدة من ذلك المضيف',
   'detail.mailBody.iframeTitle': 'محتوى الرسالة',
+  'detail.mailBody.backToTop': 'العودة إلى الأعلى',
   'detail.print.to': 'إلى:',
   'detail.print.dialogFailed': 'تعذّر فتح نافذة الطباعة.',
   'detail.loadingMessage': 'جارٍ تحميل الرسالة',
