@@ -738,6 +738,7 @@ const es: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'lleva un identificador',
   'detail.mailBody.pixelReason.lone-image': 'única imagen de ese servidor',
   'detail.mailBody.iframeTitle': 'Contenido del mensaje',
+  'detail.mailBody.backToTop': 'Volver arriba',
   'detail.print.to': 'Para:',
   'detail.print.dialogFailed': 'No se pudo abrir el diálogo de impresión.',
   'detail.loadingMessage': 'Cargando mensaje',

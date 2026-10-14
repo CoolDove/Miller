@@ -736,6 +736,7 @@ const pl: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'zawiera identyfikator',
   'detail.mailBody.pixelReason.lone-image': 'jedyny obraz z tego hosta',
   'detail.mailBody.iframeTitle': 'Treść wiadomości',
+  'detail.mailBody.backToTop': 'Powrót do góry',
   'detail.print.to': 'Do:',
   'detail.print.dialogFailed': 'Nie udało się otworzyć okna drukowania.',
   'detail.loadingMessage': 'Wczytywanie wiadomości',

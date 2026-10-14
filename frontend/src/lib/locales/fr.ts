@@ -738,6 +738,7 @@ const fr: Record<string, string> = {
   'detail.mailBody.pixelReason.opaque-id': 'contient un identifiant',
   'detail.mailBody.pixelReason.lone-image': 'seule image de cet hôte',
   'detail.mailBody.iframeTitle': 'Contenu du message',
+  'detail.mailBody.backToTop': 'Retour en haut',
   'detail.print.to': 'À :',
   'detail.print.dialogFailed': 'Impossible d\'ouvrir la boîte de dialogue d\'impression.',
   'detail.loadingMessage': 'Chargement du message',

@@ -7,7 +7,7 @@
   // plaintext renders in the mono font, with bare urls linkified. remote
   // images are blocked by the backend by default; a per-message affordance
   // asks the backend to re-render with remote content allowed.
-  import { onDestroy } from 'svelte'
+  import { onDestroy, createEventDispatcher } from 'svelte'
   import { get } from 'svelte/store'
   import { BrowserOpenURL } from '../../../wailsjs/runtime/runtime'
   import { IconPhoto, IconUserCheck, IconWorldCheck, IconMailCheck, IconShieldSearch, IconChevronDown, IconEyeOff } from '@tabler/icons-svelte'
@@ -24,6 +24,10 @@
   import type { MessageDetail, Verdict } from '../../lib/types'
 
   export let detail: MessageDetail
+
+  // bodyscroll reports the html body's own scroll offset out to the reading
+  // pane, which draws the back-to-top affordance for it.
+  const dispatch = createEventDispatcher<{ bodyscroll: number }>()
 
   $: canScan = scanEnabled($virusTotal)
 
@@ -130,12 +134,18 @@
     // Some embedded WebViews do not perform the iframe's default wheel scroll.
     // Move the actual root scroller and only consume input when it moved.
     const wheelHandler = 'document.addEventListener("wheel",function(e){var s=document.scrollingElement;if(!s)return;var m=e.deltaMode===1?parseFloat(getComputedStyle(document.body).lineHeight)||16:e.deltaMode===2?s.clientHeight:1;var x=s.scrollLeft,y=s.scrollTop;s.scrollBy(e.deltaX*m,e.deltaY*m);if(s.scrollLeft!==x||s.scrollTop!==y)e.preventDefault()},{passive:false});'
+    // report the body's own scroll offset to the parent so it can offer a way
+    // back to the top once the reader is deep into a long message. scroll does
+    // not bubble, so the listener goes on the capture phase as well as window,
+    // to catch whichever element actually ends up holding the scrollbar.
+    const scrollHandler = 'function _p(){var s=document.scrollingElement;window.parent.postMessage({peltonBodyScrollTop:s?s.scrollTop:0},"*")}window.addEventListener("scroll",_p,{passive:true});document.addEventListener("scroll",_p,{passive:true,capture:true});'
     const script =
       '<scr' +
       'ipt nonce="' +
       nonce +
       '">' +
       wheelHandler +
+      scrollHandler +
       'document.addEventListener("click",function(e){var a=e.target&&e.target.closest("a");if(!a)return;var href=(a.getAttribute("href")||"").trim();if(!href)return;if(/^#/i.test(href)){e.preventDefault();var f=href.slice(1),d;try{f=decodeURIComponent(f)}catch(_){}d=document.getElementById(f)||Array.prototype.slice.call(document.getElementsByTagName("a")).find(function(x){return x.getAttribute("name")===f});if(d){d.scrollIntoView({behavior:"smooth",block:"start"})}return;}e.preventDefault();if(/^(https?:|mailto:)/i.test(href)){window.parent.postMessage({peltonOpenUrl:href},"*")}});' +
       contextHandler +
       '</scr' +
@@ -175,6 +185,13 @@
   // and attachment areas.
   let frame: HTMLIFrameElement
 
+  // scrollToTop returns the html body to the top of its own scrollbar, for the
+  // reading pane's back-to-top button. The frame is gone while a message is
+  // still loading, hence the optional access.
+  export function scrollToTop(): void {
+    frame?.contentWindow?.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
   // readyBody returns the iframe's body only once it's our own rendered
   // srcdoc, not the iframe's transient initial blank document.
   function readyBody(): HTMLElement | null {
@@ -187,6 +204,17 @@
   // poll running against a document that's already been replaced.
   let readyPollHandle = 0
 
+  // scrollWin is the iframe window the parent-side scroll listener is on, so a
+  // reload (which swaps the window) can move it rather than stacking listeners.
+  let scrollWin: Window | null = null
+
+  // onFrameScroll reports the iframe document's scroll offset. The srcdoc's own
+  // script also posts this, but that path is unseen if the script is stripped,
+  // so this same-origin listener is the belt to its braces.
+  function onFrameScroll(): void {
+    dispatch('bodyscroll', frame?.contentDocument?.scrollingElement?.scrollTop ?? 0)
+  }
+
   // attachInteractivity wires up decorations for the iframe's current document.
   // Link clicks are handled separately, by the nonce-scoped script inside the
   // srcdoc itself (see buildSrcdoc) relaying to onWindowMessage below - not by
@@ -197,6 +225,15 @@
     const body = readyBody()
     if (!body) {
       return
+    }
+    // a fresh srcdoc replaces the document, so it starts at the top and any
+    // scroll depth reported from the previous render no longer applies.
+    dispatch('bodyscroll', 0)
+    const win = frame?.contentWindow ?? null
+    if (win && win !== scrollWin) {
+      scrollWin?.removeEventListener('scroll', onFrameScroll)
+      win.addEventListener('scroll', onFrameScroll, { passive: true })
+      scrollWin = win
     }
     // a fresh srcdoc replaces the document, so any badges from the previous
     // render are gone and have to be put back.
@@ -242,7 +279,12 @@
     if (event.source !== frame?.contentWindow) {
       return
     }
-    const data = event.data as { peltonOpenUrl?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
+    const data = event.data as { peltonOpenUrl?: unknown; peltonBodyScrollTop?: unknown; peltonContextLink?: unknown; x?: unknown; y?: unknown } | null
+    const scrolled = data?.peltonBodyScrollTop
+    if (typeof scrolled === 'number') {
+      dispatch('bodyscroll', scrolled)
+      return
+    }
     const href = data?.peltonOpenUrl
     if (typeof href === 'string' && /^(https?:|mailto:)/i.test(href)) {
       BrowserOpenURL(href)
@@ -361,6 +403,7 @@
 
   onDestroy(() => {
     cancelAnimationFrame(readyPollHandle)
+    scrollWin?.removeEventListener('scroll', onFrameScroll)
     window.removeEventListener('message', onWindowMessage)
   })
 
