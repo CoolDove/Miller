@@ -95,6 +95,22 @@ import { setFlagged, deleteMessage, archiveMessage, scanMessage, openMessageInBr
     scrollTop = (event.currentTarget as HTMLElement).scrollTop
   }
 
+  // the button floats at the top-right of the body area, which begins under the
+  // header. the header is as tall as the message makes it (a wrapping subject,
+  // more recipients, the badges row), so it is measured rather than guessed: a
+  // fixed offset would sit over the subject on some messages and halfway into
+  // the body on others.
+  let headerHeight = 0
+  function measureHeader(node: HTMLElement): { destroy: () => void } {
+    const update = (): void => {
+      headerHeight = node.offsetHeight
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(node)
+    return { destroy: () => observer.disconnect() }
+  }
+
   // backToTop returns both scrollers to the top. Only the one that is actually
   // scrolled moves; the other is already at rest.
   function backToTop(): void {
@@ -333,7 +349,9 @@ ${bodyHtml}
 
     <div class="pane">
       <div class="scroll selectable" bind:this={scrollEl} on:scroll={onScroll}>
-        <DetailHeader {detail} />
+        <div class="header-wrap" use:measureHeader>
+          <DetailHeader {detail} />
+        </div>
         <div class="body-wrap">
           {#if detail.phishing.level !== 'none'}
             <PhishingNotice report={detail.phishing} messageId={detail.id} />
@@ -356,6 +374,7 @@ ${bodyHtml}
         <button
           type="button"
           class="back-top"
+          style={`top: calc(var(--pane-pad) + ${headerHeight}px + var(--space-3))`}
           title={$t('detail.mailBody.backToTop')}
           aria-label={$t('detail.mailBody.backToTop')}
           on:click={backToTop}
@@ -456,10 +475,10 @@ ${bodyHtml}
     flex-direction: column;
   }
 
-  /* floats just left of the body's scrollbar, at the top of the reading pane. */
+  /* floats just left of the body's scrollbar, at the top of the body area. the
+     top offset is set inline from the measured header height. */
   .back-top {
     position: absolute;
-    top: var(--space-3);
     inset-inline-end: calc(var(--pane-pad) + var(--space-5));
     z-index: 20;
     display: inline-flex;
